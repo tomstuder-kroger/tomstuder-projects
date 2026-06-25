@@ -225,8 +225,19 @@ body {
   font-weight: 600;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
-  background: #e5e7eb;
-  color: #374151;
+  color: #ffffff;
+}
+
+.level-badge.apd {
+  background: #2e7d32;
+}
+
+.level-badge.pd {
+  background: #0F52A2;
+}
+
+.level-badge.spd {
+  background: #ff9800;
 }
 
 .designer-stats {

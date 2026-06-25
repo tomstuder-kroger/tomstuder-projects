@@ -39,10 +39,10 @@ function PortfolioDesignerBreakdown({ groupBy, data, title }) {
                 <div key={designer.id} className="designer-card">
                   <div className="designer-header">
                     <span className="designer-name">{designer.name}</span>
-                    <span className="level-badge">{designer.level}</span>
+                    <span className={`level-badge ${designer.level.toLowerCase()}`}>{designer.level}</span>
                   </div>
                   <div className="designer-stats">
-                    <span className="monthly-rate">{formatCurrency(designer.monthlyRunRate)}/mo</span>
+                    <span className="monthly-rate">${designer.monthlyRunRate.toLocaleString()}/mo</span>
                     <span
                       className="utilization"
                       style={{ color: getUtilizationColor(designer.utilization) }}
