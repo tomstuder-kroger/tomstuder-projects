@@ -269,3 +269,109 @@ body {
   color: #374151;
   border: 1px solid #e5e7eb;
 }
+
+/* OutcomesTable styles */
+.outcomes-table-container {
+  margin: 2rem 0;
+  overflow-x: auto;
+}
+
+.outcomes-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+}
+
+.outcomes-table thead {
+  position: sticky;
+  top: 0;
+  background: #f9fafb;
+  z-index: 10;
+}
+
+.outcomes-table th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.outcomes-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.outcomes-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.team-name {
+  font-weight: 600;
+  color: #000;
+}
+
+.portfolio-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.monthly-cost {
+  color: #6b7280;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.outcome-input {
+  width: 100%;
+  max-width: 200px;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.outcome-input:focus {
+  outline: none;
+  border-color: #0F52A2;
+  box-shadow: 0 0 0 3px rgba(15, 82, 162, 0.1);
+}
+
+.status-cell {
+  text-align: center;
+}
+
+.status-check {
+  color: #2e7d32;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.status-dash {
+  color: #9ca3af;
+  font-size: 1.25rem;
+}
+
+.footer-row {
+  background: #f9fafb;
+  text-align: center;
+  font-weight: 600;
+  border-top: 2px solid #e5e7eb;
+}
+
+.footer-complete {
+  color: #2e7d32;
+}
+
+.footer-incomplete {
+  color: #6b7280;
+}
