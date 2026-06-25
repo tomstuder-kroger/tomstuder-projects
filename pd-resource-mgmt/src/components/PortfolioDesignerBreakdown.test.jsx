@@ -45,4 +45,42 @@ describe('PortfolioDesignerBreakdown', () => {
     render(<PortfolioDesignerBreakdown groupBy="portfolio" data={mockDataByPortfolio} title="Designer Breakdown" />);
     expect(screen.getByText('Designer Breakdown')).toBeInTheDocument();
   });
+
+  test('renders sections for each group', () => {
+    render(<PortfolioDesignerBreakdown groupBy="portfolio" data={mockDataByPortfolio} title="Designer Breakdown" />);
+
+    expect(screen.getByText(/Item Portfolio/)).toBeInTheDocument();
+    expect(screen.getByText(/Assortment Portfolio/)).toBeInTheDocument();
+  });
+
+  test('displays group stats in header', () => {
+    render(<PortfolioDesignerBreakdown groupBy="portfolio" data={mockDataByPortfolio} title="Designer Breakdown" />);
+
+    // Check for ROI values and N/A
+    expect(screen.getByText(/148.5%/)).toBeInTheDocument();
+    expect(screen.getByText(/N\/A/)).toBeInTheDocument();
+    // Also check utilization and costs appear
+    expect(screen.getAllByText(/95%/)).toHaveLength(2); // Header and designer card
+    expect(screen.getAllByText(/\$22.5k/)).toHaveLength(2); // Header and designer card
+  });
+
+  test('displays designer cards with details', () => {
+    render(<PortfolioDesignerBreakdown groupBy="portfolio" data={mockDataByPortfolio} title="Designer Breakdown" />);
+
+    expect(screen.getByText('Alice Chen')).toBeInTheDocument();
+    expect(screen.getByText('Bob Smith')).toBeInTheDocument();
+    expect(screen.getByText('SPD')).toBeInTheDocument();
+    expect(screen.getByText('PD')).toBeInTheDocument();
+    // Designer cards show their own monthly rates (appears twice - once in header, once in card)
+    expect(screen.getAllByText(/\$22.5k/)).toHaveLength(2);
+    expect(screen.getAllByText(/\$18.0k/)).toHaveLength(2);
+  });
+
+  test('displays allocation badges', () => {
+    render(<PortfolioDesignerBreakdown groupBy="portfolio" data={mockDataByPortfolio} title="Designer Breakdown" />);
+
+    expect(screen.getByText(/Item Pricing.*60%/)).toBeInTheDocument();
+    expect(screen.getByText(/Item Analytics.*35%/)).toBeInTheDocument();
+    expect(screen.getByText(/Assortment Planning.*80%/)).toBeInTheDocument();
+  });
 });
