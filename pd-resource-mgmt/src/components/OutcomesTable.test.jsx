@@ -32,13 +32,13 @@ describe('OutcomesTable', () => {
       id: 'd1',
       name: 'Alice Chen',
       level: 'SPD',
-      allocations: [{ teamId: 't1', allocationPercent: 60 }]
+      allocations: [{ productTeamId: 't1', percentage: 60 }]
     },
     {
       id: 'd2',
       name: 'Bob Smith',
       level: 'PD',
-      allocations: [{ teamId: 't2', allocationPercent: 80 }]
+      allocations: [{ productTeamId: 't2', percentage: 80 }]
     }
   ];
 
@@ -48,11 +48,17 @@ describe('OutcomesTable', () => {
   };
 
   const mockCapacitySettings = {
-    hoursPerWeek: 40,
-    weeksPerMonth: 4,
-    apd: { monthlyRate: 15000 },
-    pd: { monthlyRate: 18000 },
-    spd: { monthlyRate: 22500 }
+    standardHoursPerWeek: 40,
+    weeksPerYear: 52,
+    ptoHoursPerYear: 120,
+    holidaysHoursPerYear: 80,
+    ldHoursPerYear: 24,
+    okrPlanningHoursPerYear: 16,
+    ratesByLevel: {
+      APD: { actual: 100, blended: 125 },
+      PD: { actual: 120, blended: 150 },
+      SPD: { actual: 150, blended: 180 }
+    }
   };
 
   const mockUpdateOutcome = jest.fn();
@@ -74,5 +80,43 @@ describe('OutcomesTable', () => {
     expect(screen.getByText('Monthly Design Cost')).toBeInTheDocument();
     expect(screen.getByText('Outcomes Value')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
+  });
+
+  test('renders team rows with data', () => {
+    render(
+      <OutcomesTable
+        productTeams={mockProductTeams}
+        portfolios={mockPortfolios}
+        designers={mockDesigners}
+        outcomes={mockOutcomes}
+        capacitySettings={mockCapacitySettings}
+        onUpdateOutcome={mockUpdateOutcome}
+      />
+    );
+
+    expect(screen.getByText('Item Pricing')).toBeInTheDocument();
+    expect(screen.getByText('Assortment Planning')).toBeInTheDocument();
+    expect(screen.getByText('Item')).toBeInTheDocument();
+    expect(screen.getByText('Assortment')).toBeInTheDocument();
+  });
+
+  test('displays monthly costs', () => {
+    render(
+      <OutcomesTable
+        productTeams={mockProductTeams}
+        portfolios={mockPortfolios}
+        designers={mockDesigners}
+        outcomes={mockOutcomes}
+        capacitySettings={mockCapacitySettings}
+        onUpdateOutcome={mockUpdateOutcome}
+      />
+    );
+
+    // Should calculate costs based on allocations
+    // Available hours: (40 * 52) - 120 - 80 - 24 - 16 = 1840
+    // t1: SPD (180 blended) * 1840 * 60% / 12 = 16,560
+    // t2: PD (150 blended) * 1840 * 80% / 12 = 18,400
+    expect(screen.getByText('$16,560')).toBeInTheDocument();
+    expect(screen.getByText('$18,400')).toBeInTheDocument();
   });
 });
