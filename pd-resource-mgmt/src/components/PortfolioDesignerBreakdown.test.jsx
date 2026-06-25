@@ -61,7 +61,8 @@ describe('PortfolioDesignerBreakdown', () => {
     expect(screen.getByText(/N\/A/)).toBeInTheDocument();
     // Also check utilization and costs appear
     expect(screen.getAllByText(/95%/)).toHaveLength(2); // Header and designer card
-    expect(screen.getAllByText(/\$22.5k/)).toHaveLength(2); // Header and designer card
+    expect(screen.getByText(/\$22.5k/)).toBeInTheDocument(); // Header uses abbreviated format
+    expect(screen.getByText(/\$22,500\/mo/)).toBeInTheDocument(); // Designer card uses full format
   });
 
   test('displays designer cards with details', () => {
@@ -71,9 +72,9 @@ describe('PortfolioDesignerBreakdown', () => {
     expect(screen.getByText('Bob Smith')).toBeInTheDocument();
     expect(screen.getByText('SPD')).toBeInTheDocument();
     expect(screen.getByText('PD')).toBeInTheDocument();
-    // Designer cards show their own monthly rates (appears twice - once in header, once in card)
-    expect(screen.getAllByText(/\$22.5k/)).toHaveLength(2);
-    expect(screen.getAllByText(/\$18.0k/)).toHaveLength(2);
+    // Designer cards show their own monthly rates in full format
+    expect(screen.getByText(/\$22,500\/mo/)).toBeInTheDocument();
+    expect(screen.getByText(/\$18,000\/mo/)).toBeInTheDocument();
   });
 
   test('displays allocation badges', () => {
