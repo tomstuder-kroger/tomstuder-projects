@@ -23,6 +23,20 @@ function OutcomesTable({
     return colors[portfolioName] || '#6b7280';
   };
 
+  const handleOutcomeChange = (teamId, value) => {
+    const numericValue = parseFloat(value.replace(/[^0-9.]/g, ''));
+    if (!isNaN(numericValue)) {
+      onUpdateOutcome(teamId, numericValue);
+    } else if (value === '') {
+      onUpdateOutcome(teamId, null);
+    }
+  };
+
+  const formatOutcomeValue = (value) => {
+    if (value === null || value === undefined) return '';
+    return value.toLocaleString();
+  };
+
   return (
     <div className="outcomes-table-container">
       <table className="outcomes-table">
@@ -39,6 +53,8 @@ function OutcomesTable({
           {productTeams.map((team) => {
             const portfolioName = getPortfolioName(team.portfolioId);
             const monthlyCost = calculateTeamMonthlyCost(team.id, designers, capacitySettings);
+            const outcomeValue = outcomes[team.id];
+            const hasOutcome = outcomeValue !== null && outcomeValue !== undefined;
 
             return (
               <tr key={team.id}>
@@ -52,8 +68,22 @@ function OutcomesTable({
                   </span>
                 </td>
                 <td className="monthly-cost">${monthlyCost.toLocaleString()}</td>
-                <td></td>
-                <td></td>
+                <td>
+                  <input
+                    type="text"
+                    className="outcome-input"
+                    value={formatOutcomeValue(outcomeValue)}
+                    onChange={(e) => handleOutcomeChange(team.id, e.target.value)}
+                    placeholder="$0"
+                  />
+                </td>
+                <td className="status-cell">
+                  {hasOutcome ? (
+                    <span className="status-check">✓</span>
+                  ) : (
+                    <span className="status-dash">-</span>
+                  )}
+                </td>
               </tr>
             );
           })}

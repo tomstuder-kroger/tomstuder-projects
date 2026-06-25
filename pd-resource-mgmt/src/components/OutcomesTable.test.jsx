@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import OutcomesTable from './OutcomesTable';
 
 describe('OutcomesTable', () => {
@@ -118,5 +118,39 @@ describe('OutcomesTable', () => {
     // t2: PD (150 blended) * 1840 * 80% / 12 = 18,400
     expect(screen.getByText('$16,560')).toBeInTheDocument();
     expect(screen.getByText('$18,400')).toBeInTheDocument();
+  });
+
+  test('displays outcomes input fields', () => {
+    render(
+      <OutcomesTable
+        productTeams={mockProductTeams}
+        portfolios={mockPortfolios}
+        designers={mockDesigners}
+        outcomes={mockOutcomes}
+        capacitySettings={mockCapacitySettings}
+        onUpdateOutcome={mockUpdateOutcome}
+      />
+    );
+
+    const inputs = screen.getAllByRole('textbox');
+    expect(inputs).toHaveLength(2); // One per team
+  });
+
+  test('calls onUpdateOutcome when input changes', () => {
+    render(
+      <OutcomesTable
+        productTeams={mockProductTeams}
+        portfolios={mockPortfolios}
+        designers={mockDesigners}
+        outcomes={mockOutcomes}
+        capacitySettings={mockCapacitySettings}
+        onUpdateOutcome={mockUpdateOutcome}
+      />
+    );
+
+    const inputs = screen.getAllByRole('textbox');
+    fireEvent.change(inputs[0], { target: { value: '600000' } });
+
+    expect(mockUpdateOutcome).toHaveBeenCalledWith('t1', 600000);
   });
 });
