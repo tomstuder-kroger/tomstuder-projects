@@ -37,6 +37,13 @@ function OutcomesTable({
     return value.toLocaleString();
   };
 
+  const trackedCount = productTeams.filter(team => {
+    const outcome = outcomes[team.id];
+    return outcome !== null && outcome !== undefined;
+  }).length;
+
+  const allTracked = trackedCount === productTeams.length;
+
   return (
     <div className="outcomes-table-container">
       <table className="outcomes-table">
@@ -88,6 +95,19 @@ function OutcomesTable({
             );
           })}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan="5" className="footer-row">
+              {allTracked ? (
+                <span className="footer-complete">All teams tracked ✓</span>
+              ) : (
+                <span className="footer-incomplete">
+                  {trackedCount} of {productTeams.length} teams tracked
+                </span>
+              )}
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );

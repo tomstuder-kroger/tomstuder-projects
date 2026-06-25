@@ -153,4 +153,39 @@ describe('OutcomesTable', () => {
 
     expect(mockUpdateOutcome).toHaveBeenCalledWith('t1', 600000);
   });
+
+  test('displays completion count in footer', () => {
+    render(
+      <OutcomesTable
+        productTeams={mockProductTeams}
+        portfolios={mockPortfolios}
+        designers={mockDesigners}
+        outcomes={mockOutcomes}
+        capacitySettings={mockCapacitySettings}
+        onUpdateOutcome={mockUpdateOutcome}
+      />
+    );
+
+    expect(screen.getByText(/1 of 2 teams tracked/)).toBeInTheDocument();
+  });
+
+  test('displays all tracked when complete', () => {
+    const allOutcomes = {
+      't1': 500000,
+      't2': 400000
+    };
+
+    render(
+      <OutcomesTable
+        productTeams={mockProductTeams}
+        portfolios={mockPortfolios}
+        designers={mockDesigners}
+        outcomes={allOutcomes}
+        capacitySettings={mockCapacitySettings}
+        onUpdateOutcome={mockUpdateOutcome}
+      />
+    );
+
+    expect(screen.getByText(/All teams tracked ✓/)).toBeInTheDocument();
+  });
 });
