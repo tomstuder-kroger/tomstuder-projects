@@ -85,7 +85,7 @@ export function getUtilizationStatus(utilization) {
  * Calculate monthly cost for a team
  * Sums the allocated monthly run rates for all designers assigned to the team
  */
-function calculateTeamMonthlyCost(teamId, designers, capacitySettings) {
+export function calculateTeamMonthlyCost(teamId, designers, capacitySettings) {
   let monthlyCost = 0;
 
   designers.forEach(designer => {

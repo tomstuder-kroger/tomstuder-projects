@@ -3,12 +3,10 @@ import { ResourceProvider, useResource } from './context/ResourceContext';
 import GlobalNavBar from './components/GlobalNavBar';
 import DesignerGrid from './components/DesignerGrid';
 import DesignerEditModal from './components/DesignerEditModal';
-import TeamMetricCards from './components/TeamMetricCards';
-import TeamSecondaryStats from './components/TeamSecondaryStats';
+import TeamSummary from './components/TeamSummary';
 import './App.css';
 
 function AppContent() {
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedDesigner, setSelectedDesigner] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const { currentView } = useResource();
@@ -30,7 +28,7 @@ function AppContent() {
 
   return (
     <div className="app-shell">
-      <GlobalNavBar onSettingsClick={() => setSettingsOpen(true)} />
+      <GlobalNavBar onSettingsClick={() => {}} />
 
       <div className="app-container">
         {currentView === 'individual' && (
@@ -41,22 +39,7 @@ function AppContent() {
         )}
 
         {currentView === 'summary' && (
-          <div>
-            <TeamMetricCards
-              totalMonthlyRunRate={199999}
-              averageUtilization={82}
-              totalOutcomesValue={2000000}
-              overallROI={83.3}
-              incompleteTeamsCount={0}
-              totalTeamsCount={10}
-            />
-            <TeamSecondaryStats
-              totalHoursAvailable={20240}
-              totalHoursAllocated={18400}
-              headcountByLevel={{ APD: 2, PD: 5, SPD: 4 }}
-              averageRunRatePerDesigner={18181}
-            />
-          </div>
+          <TeamSummary />
         )}
       </div>
 
