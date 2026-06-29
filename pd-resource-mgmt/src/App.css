@@ -375,3 +375,30 @@ body {
 .footer-incomplete {
   color: #6b7280;
 }
+
+/* TeamSummary Page styles */
+.team-summary-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.chart-section {
+  margin-bottom: 3rem;
+}
+
+.page-footnote {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .team-summary-page {
+    padding: 1rem;
+  }
+}
