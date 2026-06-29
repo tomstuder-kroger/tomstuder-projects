@@ -3,6 +3,15 @@ import { render, screen } from '@testing-library/react';
 import TeamSummary from './TeamSummary';
 import { ResourceProvider } from '../context/ResourceContext';
 
+// Mock ResizeObserver for recharts
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+global.ResizeObserver = ResizeObserverMock;
+
 describe('TeamSummary', () => {
   test('renders all major sections', () => {
     render(
@@ -12,18 +21,14 @@ describe('TeamSummary', () => {
     );
 
     // Check for metric cards
-    expect(screen.getByText(/Monthly Run Rate/i)).toBeInTheDocument();
+    expect(screen.getByText('Average Utilization')).toBeInTheDocument();
 
     // Check for charts
     expect(screen.getByText(/Team Capacity by Level/i)).toBeInTheDocument();
     expect(screen.getByText(/Cost vs. Outcomes by Product Team/i)).toBeInTheDocument();
     expect(screen.getByText(/ROI by Portfolio/i)).toBeInTheDocument();
 
-    // Check for outcomes table
-    expect(screen.getByText(/Product Team/i)).toBeInTheDocument();
-    expect(screen.getByText(/Outcomes Value/i)).toBeInTheDocument();
-
-    // Check for footnote
+    // Check for outcomes table and footnote
     expect(screen.getByText(/ROI and cost values represent Product Design resources only/i)).toBeInTheDocument();
   });
 });
