@@ -143,10 +143,11 @@ function DesignerEditModal({ designer, isOpen, onClose }) {
                   <div style={{ flex: 2 }}>
                     <MxSingleSelect
                       label="Product Team"
-                      items={productTeams.map(t => t.name)}
-                      value={productTeams.find(t => t.id === allocation.productTeamId)?.name || ''}
+                      items={['Select One', ...productTeams.map(t => t.name)]}
+                      value={productTeams.find(t => t.id === allocation.productTeamId)?.name || 'Select One'}
                       emitOnlyValue
                       onValueUpdate={(e) => {
+                        if (e.detail === 'Select One') return;
                         const team = productTeams.find(t => t.name === e.detail);
                         if (team) {
                           handleAllocationChange(index, 'productTeamId', team.id);
