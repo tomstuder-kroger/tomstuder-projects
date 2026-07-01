@@ -3,6 +3,7 @@ import { MxModal, MxModalBody, KdsTabs } from 'react-mx-web-components';
 import { useResource } from '../context/ResourceContext';
 import SettingsCapacityTab from './SettingsCapacityTab';
 import SettingsRatesTab from './SettingsRatesTab';
+import SettingsTeamsTab from './SettingsTeamsTab';
 import SettingsPortfoliosTab from './SettingsPortfoliosTab';
 
 function SettingsModal({ isOpen, onClose }) {
@@ -35,7 +36,7 @@ function SettingsModal({ isOpen, onClose }) {
         <div style={{ marginTop: '1.5rem' }}>
           {activeTab === 'capacity' && <SettingsCapacityTab />}
           {activeTab === 'rates' && <SettingsRatesTab />}
-          {activeTab === 'teams' && <div>Teams tab placeholder</div>}
+          {activeTab === 'teams' && <SettingsTeamsTab />}
           {activeTab === 'portfolios' && <SettingsPortfoliosTab />}
         </div>
       </MxModalBody>
