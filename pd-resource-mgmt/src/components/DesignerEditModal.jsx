@@ -78,12 +78,15 @@ function DesignerEditModal({ designer, isOpen, onClose }) {
     setAllocations(updated);
   };
 
+  if (!isOpen) return null;
+
   return (
     <>
       <MxModal
         isOpened={isOpen}
         headercontent={designer ? `Edit Designer - ${designer.name}` : 'Add Designer'}
         footerPrimaryButtonText="Save"
+        footerPrimaryButtonDisabled={!name.trim()}
         footerSecondaryButtonText="Cancel"
         closeOnSecondaryButton
         onApplyClick={handleSave}
@@ -92,9 +95,10 @@ function DesignerEditModal({ designer, isOpen, onClose }) {
         size="l"
       >
         <MxModalBody>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <MxInputTextBox
               label="Name"
+              placeholder="e.g., Jane Smith"
               value={name}
               onChange={(e) => setName(e.target.value)}
               mask="none"

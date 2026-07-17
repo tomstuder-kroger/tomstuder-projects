@@ -5,6 +5,7 @@ import SettingsCapacityTab from './SettingsCapacityTab';
 import SettingsRatesTab from './SettingsRatesTab';
 import SettingsTeamsTab from './SettingsTeamsTab';
 import SettingsPortfoliosTab from './SettingsPortfoliosTab';
+import SettingsImportExportTab from './SettingsImportExportTab';
 
 function SettingsModal({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState('capacity');
@@ -13,7 +14,8 @@ function SettingsModal({ isOpen, onClose }) {
     { id: 'capacity', label: 'Capacity' },
     { id: 'rates', label: 'Rates' },
     { id: 'teams', label: 'Product Teams' },
-    { id: 'portfolios', label: 'Portfolios' }
+    { id: 'portfolios', label: 'Portfolios' },
+    { id: 'import-export', label: 'Import/Export' }
   ];
 
   return (
@@ -38,6 +40,7 @@ function SettingsModal({ isOpen, onClose }) {
           {activeTab === 'rates' && <SettingsRatesTab />}
           {activeTab === 'teams' && <SettingsTeamsTab />}
           {activeTab === 'portfolios' && <SettingsPortfoliosTab />}
+          {activeTab === 'import-export' && <SettingsImportExportTab />}
         </div>
       </MxModalBody>
     </MxModal>

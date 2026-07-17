@@ -223,6 +223,55 @@ export function ResourceProvider({ children }) {
     }));
   }, []);
 
+  const importFromCapacityApp = useCallback((icsData) => {
+    if (!Array.isArray(icsData) || icsData.length === 0) {
+      throw new Error('No valid IC data to import');
+    }
+
+    // Map IC role to Designer level with safe defaults
+    const mapRoleToLevel = (icRole) => {
+      const role = (icRole || '').toLowerCase().trim();
+      if (role.includes('senior') || role.includes('spd')) return 'SPD';
+      if (role.includes('associate') || role.includes('apd')) return 'APD';
+      return 'PD'; // Default to mid-level
+    };
+
+    const newDesigners = [];
+    const existingNames = new Set(
+      state.designers.map(d => d.name.toLowerCase().trim())
+    );
+
+    icsData.forEach(ic => {
+      // Validate IC has required fields
+      if (!ic.icName || typeof ic.icName !== 'string') return;
+
+      const nameLower = ic.icName.toLowerCase().trim();
+
+      // Skip if designer already exists
+      if (existingNames.has(nameLower)) return;
+
+      // Create new designer with safe defaults
+      newDesigners.push({
+        id: uuidv4(),
+        name: ic.icName,
+        level: mapRoleToLevel(ic.icRole),
+        employmentStatus: 'FTE', // Default to FTE
+        allocations: [] // Start with no allocations - user will assign manually
+      });
+    });
+
+    if (newDesigners.length === 0) {
+      throw new Error('No new designers to import (all ICs already exist)');
+    }
+
+    setState(prev => ({
+      ...prev,
+      designers: [...prev.designers, ...newDesigners]
+    }));
+
+    return { count: newDesigners.length };
+  }, [state.designers]);
+
   const resetToPlaceholder = useCallback(() => {
     const initial = getInitialData();
     setState(prev => ({
@@ -261,6 +310,7 @@ export function ResourceProvider({ children }) {
     setSortBy,
     exportData,
     importData,
+    importFromCapacityApp,
     resetToPlaceholder
   };
 

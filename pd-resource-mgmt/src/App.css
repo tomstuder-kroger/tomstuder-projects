@@ -402,3 +402,54 @@ body {
     padding: 1rem;
   }
 }
+
+/* Modal fixes */
+mx-modal {
+  z-index: 9999;
+}
+
+mx-modal::part(overlay) {
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+}
+
+mx-modal::part(dialog) {
+  max-width: 600px;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+}
+
+mx-modal::part(header) {
+  padding: 16px !important;
+}
+
+mx-modal::part(footer) {
+  padding: 20px !important;
+}
+
+/* Direct class targeting as fallback */
+.mx-modal-header {
+  padding: 16px !important;
+}
+
+.mx-modal-footer {
+  padding: 20px !important;
+}
+
+mx-modal-body {
+  display: block;
+  width: 100%;
+  padding: 0 !important;
+}
+
+mx-modal-body > div {
+  padding: 1.5rem;
+}
+
+mx-modal-body mx-input-text-box,
+mx-modal-body mx-single-select {
+  display: block;
+  width: 100%;
+  margin-bottom: 0;
+}

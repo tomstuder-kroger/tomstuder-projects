@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { loadICs, saveICs, loadActiveICId, saveActiveICId, loadTeamName, saveTeamName, mergeImportedData } from '../utils/storage';
-import { muralImports } from '../data/muralImports';
+import { loadICs, saveICs, loadActiveICId, saveActiveICId, loadTeamName, saveTeamName } from '../utils/storage';
 import {
   calculateTimeOff,
   calculateTotalPTO,
   getProjectWeeks,
+  calculateProjectCapacity,
+  calculateDomainCapacity,
   calculateTotalPlanned,
   calculateUtilization,
   calculateStatus
@@ -45,7 +46,7 @@ export const CapacityProvider = ({ children }) => {
 
   // Load from localStorage on mount
   useEffect(() => {
-    const loadedICs = mergeImportedData(loadICs(), muralImports);
+    const loadedICs = loadICs();
     const loadedActiveId = loadActiveICId();
 
     if (loadedICs.length > 0) {
@@ -197,19 +198,25 @@ export const CapacityProvider = ({ children }) => {
     const domainEfforts = ic.domains.map(domain => {
       const projects = (domain.projects || []).map(p => ({
         title: p.title,
-        weeks: getProjectWeeks(p)
+        duration: getProjectWeeks(p),
+        allocation: p.allocationPercent || 100,
+        capacity: calculateProjectCapacity(p),
+        storyPoints: p.storyPoints || null
       }));
-      const totalWeeks = projects.reduce((sum, p) => sum + p.weeks, 0);
+
+      const totalCapacity = calculateDomainCapacity(domain);
+
       return {
         domainId: domain.id,
         domainName: domain.name,
-        totalWeeks,
+        totalWeeks: totalCapacity, // Now represents capacity consumed
+        totalCapacity,
         projects
       };
     });
 
-    const effortValues = domainEfforts.map(d => d.totalWeeks);
-    const totalPlannedWork = calculateTotalPlanned(effortValues);
+    const capacityValues = domainEfforts.map(d => d.totalCapacity);
+    const totalPlannedWork = calculateTotalPlanned(capacityValues);
     const capacityUtilization = calculateUtilization(totalPlannedWork, totalWeeksAvailable);
     const overUnderCapacity = totalPlannedWork - totalWeeksAvailable;
     const status = calculateStatus(capacityUtilization);
