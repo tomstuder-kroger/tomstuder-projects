@@ -17,7 +17,14 @@ export function ResourceProvider({ children }) {
   // Initialize state from localStorage or placeholder data
   const [state, setState] = useState(() => {
     const stored = loadData();
-    if (stored) {
+
+    // Check if stored data has valid outcomes structure
+    const hasValidOutcomes = stored?.outcomes && typeof stored.outcomes === 'object' &&
+      Object.keys(stored.outcomes).length > 0 &&
+      Object.keys(stored.outcomes).some(key => typeof stored.outcomes[key] === 'number');
+
+    if (stored && hasValidOutcomes) {
+      console.log('Loading from localStorage:', stored);
       return {
         designers: stored.designers || [],
         productTeams: stored.productTeams || [],
@@ -32,10 +39,12 @@ export function ResourceProvider({ children }) {
       };
     }
 
+    // If no valid stored data, use placeholder data
+    console.log('No valid localStorage data, using placeholder data');
     const initial = getInitialData();
+    console.log('Initial data loaded:', initial);
     return {
       ...initial,
-      outcomes: {},
       currentView: 'individual',
       filterLevel: null,
       filterStatus: null,

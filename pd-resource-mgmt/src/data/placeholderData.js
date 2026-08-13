@@ -156,9 +156,24 @@ const capacitySettings = {
   }
 };
 
-// Outcomes
+// Outcomes - keyed by productTeam ID
+// Realistic placeholder values representing annual value delivered
 const outcomes = {
-  totalValue: 2000000
+  // Item Portfolio teams
+  [productTeams[0].id]: 500000,   // Item Pricing Team
+  [productTeams[1].id]: 400000,   // Item Catalog Team
+  [productTeams[2].id]: 600000,   // Item Discovery Team
+  [productTeams[3].id]: 450000,   // Item Recommendations Team
+
+  // Assortment Portfolio teams
+  [productTeams[4].id]: 350000,   // Assortment Planning Team
+  [productTeams[5].id]: 300000,   // Category Management Team
+  [productTeams[6].id]: 250000,   // Inventory Optimization Team
+
+  // Supplier Portfolio teams
+  [productTeams[7].id]: 200000,   // Supplier Onboarding Team
+  [productTeams[8].id]: 150000,   // Supplier Portal Team
+  [productTeams[9].id]: 100000    // Supplier Analytics Team
 };
 
 export function getInitialData() {
