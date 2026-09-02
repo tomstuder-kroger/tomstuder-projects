@@ -33,10 +33,34 @@ export default function ListView() {
     <table className="list-view">
       <thead>
         <tr>
-          <th role="columnheader" onClick={() => handleSort('id')}>ID</th>
-          <th role="columnheader" onClick={() => handleSort('label')}>Label</th>
-          <th role="columnheader" onClick={() => handleSort('cat')}>Category</th>
-          <th role="columnheader" onClick={() => handleSort('connections')}>Connections</th>
+          <th
+            role="columnheader"
+            tabIndex={0}
+            aria-sort={sortBy === 'id' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+            onClick={() => handleSort('id')}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('id'); } }}
+          >ID</th>
+          <th
+            role="columnheader"
+            tabIndex={0}
+            aria-sort={sortBy === 'label' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+            onClick={() => handleSort('label')}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('label'); } }}
+          >Label</th>
+          <th
+            role="columnheader"
+            tabIndex={0}
+            aria-sort={sortBy === 'cat' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+            onClick={() => handleSort('cat')}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('cat'); } }}
+          >Category</th>
+          <th
+            role="columnheader"
+            tabIndex={0}
+            aria-sort={sortBy === 'connections' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+            onClick={() => handleSort('connections')}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('connections'); } }}
+          >Connections</th>
         </tr>
       </thead>
       <tbody>
