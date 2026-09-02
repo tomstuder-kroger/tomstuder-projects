@@ -392,6 +392,7 @@ git commit -m "feat: port PID dataset from reference HTML into data module"
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { FilterProvider, useFilters } from './FilterContext';
+import { adjacency } from '../data/pidData';
 
 function wrapper({ children }) {
   return <FilterProvider>{children}</FilterProvider>;
@@ -435,8 +436,10 @@ describe('FilterContext', () => {
       result.current.setNamedOnly(false);
       result.current.setHubFilter('TRNROT');
     });
-    expect(result.current.visibleNodeIds.has('TRNROT')).toBe(true);
-    expect(result.current.visibleNodeIds.size).toBeGreaterThan(1);
+    // Exact expected size: the hub itself + every one of its direct neighbors
+    // (namedOnly is off here, so no neighbor is excluded for lacking a label).
+    const expectedSize = 1 + adjacency.get('TRNROT').size;
+    expect(result.current.visibleNodeIds.size).toBe(expectedSize);
   });
 
   it('throws if useFilters is used outside a provider', () => {
@@ -780,15 +783,22 @@ describe('ListView', () => {
   });
 
   it('shows total-degree connection count unaffected by category filter', async () => {
-    render(
-      <Controlled>
-        <ListView />
-      </Controlled>
-    );
+    function Harness() {
+      const { setCategories } = useFilters();
+      return (
+        <>
+          <button onClick={() => setCategories(new Set(['batch']))}>Batch only</button>
+          <ListView />
+        </>
+      );
+    }
+    render(<Controlled><Harness /></Controlled>);
     const posRow = screen.getByText('POS Publisher').closest('tr');
     const before = posRow.querySelector('[data-col="connections"]').textContent;
-    // Sorting shouldn't change the count value itself
-    await userEvent.click(screen.getByRole('columnheader', { name: /label/i }));
+    // POS Publisher (PID4102) is itself 'batch', so narrowing to 'batch' keeps its row
+    // visible but must not change ITS connection count, which counts ALL its neighbors
+    // (including non-batch ones like POS_KMA/hub) regardless of the active category filter.
+    await userEvent.click(screen.getByRole('button', { name: 'Batch only' }));
     const posRowAfter = screen.getByText('POS Publisher').closest('tr');
     expect(posRowAfter.querySelector('[data-col="connections"]').textContent).toBe(before);
   });
@@ -1073,8 +1083,8 @@ const nodesById = new Map(nodes.map(n => [n.id, n]));
 const CATEGORY_ORDER = ['cics', 'mq', 'batch', 'hub'];
 const MAX_DEPTH = 4;
 
-function TreeNode({ nodeId, visibleNodeIds, path, onSelect }) {
-  const [expanded, setExpanded] = useState(false);
+function TreeNode({ nodeId, visibleNodeIds, path, onSelect, initiallyExpanded = false }) {
+  const [expanded, setExpanded] = useState(initiallyExpanded);
   const node = nodesById.get(nodeId);
   const children = [...(adjacency.get(nodeId) ?? [])]
     .filter(id => visibleNodeIds.has(id) && !path.has(id));
@@ -1130,10 +1140,12 @@ export default function TreeView() {
         </div>
         <ul>
           <TreeNode
+            key={root}
             nodeId={root}
             visibleNodeIds={visibleNodeIds}
             path={new Set()}
             onSelect={setRoot}
+            initiallyExpanded
           />
         </ul>
       </div>
@@ -1162,7 +1174,9 @@ function CategoryBranch({ cat, ids, visibleNodeIds, onSelect }) {
   return (
     <li>
       <span className="tree-label" onClick={() => setExpanded(e => !e)}>
-        {expanded ? '▾ ' : '▸ '}{CAT_PLURAL[cat]} ({ids.length})
+        <span aria-hidden="true">{expanded ? '▾' : '▸'}</span>{' '}
+        <span>{CAT_PLURAL[cat]}</span>{' '}
+        <span className="tree-count">({ids.length})</span>
       </span>
       {expanded && (
         <ul>
@@ -1366,7 +1380,7 @@ import GraphView from './GraphView';
 // enough for mount to succeed, but SVG geometry won't be meaningful. We only assert
 // structural facts here.
 describe('GraphView', () => {
-  it('renders an svg with one <g> node group and does not mutate the shared links array', () => {
+  it('renders an svg with 535 node groups and does not mutate the shared links array', () => {
     const originalLinksSnapshot = links.map(l => ({ ...l }));
     render(<FilterProvider><GraphView /></FilterProvider>);
     expect(document.querySelector('svg')).toBeTruthy();
