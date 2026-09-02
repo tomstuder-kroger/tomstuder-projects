@@ -38,6 +38,8 @@ This is a direct, faithful port — same IDs, same generation loops (`PIDB001..0
 
 Category and hub metadata (`CAT_COLOR`, `CAT_LABEL`, `CAT_PLURAL`) also move into this module for reuse across all views.
 
+**Mutation hazard:** `d3.forceLink(links)` mutates its input array in place, replacing each link's `source`/`target` string ids with references to the actual node objects (the reference file relies on this for `buildAdj()`). Since `links` here is a shared, module-level array read by all 5 views, GraphView must pass `d3.forceLink()` a **shallow clone** of `links` (`links.map(l => ({...l}))`) rather than the shared array, so its ids-to-objects mutation stays local to Graph and never corrupts what List/Tree/Cards read. Every non-Graph view must derive connection info exclusively from the `adjacency` Map — never by reading `.source`/`.target` off shared `links` objects directly.
+
 ## Shared filter state
 
 `src/context/FilterContext.jsx` provides:
@@ -45,7 +47,7 @@ Category and hub metadata (`CAT_COLOR`, `CAT_LABEL`, `CAT_PLURAL`) also move int
 - `search` (string) — matches against `id` and `label`, case-insensitive substring
 - `categories` (Set of `cics`/`mq`/`batch`/`hub`, all selected by default)
 - `hubFilter` (nullable hub id) — when set, show only nodes directly connected to that hub (via `adjacency`)
-- `namedOnly` (boolean, **defaults to `true`**) — when true, restricts to the ~40 nodes that have a `label`
+- `namedOnly` (boolean, **defaults to `true`** in every view, including Graph) — when true, restricts to the ~40 nodes that have a `label`
 
 Exposes a derived `visibleNodeIds: Set<string>` (memoized on filter state) that every view reads. Filters persist across view switches (lifted to `App.jsx`, not per-view local state).
 
@@ -76,9 +78,11 @@ Category-rooted expandable tree as the default landing structure: top level = 4 
 
 Clicking any node re-roots the tree at that node: the view switches to rendering that node as the root, with its direct neighbors (from `adjacency`) as children, expandable outward level by level. A "back to categories" control returns to the default rooted view. This combines the category-rooted structure with a pick-a-root explorer, per brainstorming discussion — chosen over a pure hub-rooted tree (rejected: heavily skewed, 249 of 527 nodes sit under one hub) and a pure blank-root explorer (rejected: no populated default landing state).
 
+**Cycle handling:** the underlying graph has cycles (chained `PIDT` nodes, nodes with multiple hub connections), so outward expansion must track a visited-set of node ids per branch and skip re-adding any id already present on the path from the root to the current node, rather than letting it reappear as its own descendant. A node reachable via multiple paths may still appear in multiple branches (that's expected/informative) — the visited-set only prevents a node from being its own ancestor.
+
 ### List (`views/ListView.jsx`)
 
-Flat, sortable table: ID, Label, Category, Connection count. Sortable by any column. Respects shared filters. No sub-listing/expansion — that's the dedicated List+Deps view's job.
+Flat, sortable table: ID, Label, Category, Connection count. Sortable by any column. Respects shared filters (i.e. filtered-out rows are excluded, not just visually deemphasized). "Connection count" is the node's total degree from the full `adjacency` Map (unaffected by current filters — it always reflects the complete dataset, not just currently-visible neighbors), so it doesn't change as the user filters. No sub-listing/expansion — that's the dedicated List+Deps view's job.
 
 ### List with dependency sub-listings (`views/ListWithDepsView.jsx`)
 
@@ -90,7 +94,7 @@ Rich cards (validated as Option C during brainstorming, chosen over compact and 
 
 ## Named-only default and filler nodes
 
-The ~490 generated filler nodes (`PIDB001..040`, `PBAT0001..0366`, etc.) have no `label` or `sub`. Across List, Tree, and Cards, the `namedOnly` filter **defaults to `true`**, so these views land showing only the ~40 curated/described nodes — readable on first load. Graph view is exempt from this default (it already renders all 527 nodes today and dimming/hiding via the shared filter still applies if the user turns filters on, but graph's own default view is unfiltered, consistent with the existing reference behavior). Toggling "Named only" off in the filter bar reveals filler nodes everywhere, labeled by ID only.
+The ~490 generated filler nodes (`PIDB001..040`, `PBAT0001..0366`, etc.) have no `label` or `sub`. The `namedOnly` filter **defaults to `true`** globally (one shared setting, not per-view), so every view — including Graph — lands showing only the ~40 curated/described nodes on first load. This is a change from the reference file's own default (which shows all 527 unfiltered), made deliberately so first-load behavior is consistent and readable across all 5 views rather than Graph being a special case. Graph applies this the same way it applies every other filter: dimming non-matching nodes/links rather than removing them from the simulation. Toggling "Named only" off in the filter bar reveals filler nodes everywhere, labeled by ID only.
 
 ## Testing
 
