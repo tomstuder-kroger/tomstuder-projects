@@ -28,13 +28,13 @@ export function FilterProvider({ children }) {
     return result;
   }, [search, categories, hubFilter, namedOnly]);
 
-  const value = {
+  const value = useMemo(() => ({
     search, setSearch,
     categories, setCategories,
     hubFilter, setHubFilter,
     namedOnly, setNamedOnly,
     visibleNodeIds,
-  };
+  }), [search, categories, hubFilter, namedOnly, visibleNodeIds]);
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;
 }
