@@ -1,0 +1,12 @@
+.card-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+.card { border: 1px solid #1e293b; border-radius: 8px; padding: 12px; width: 260px; font-size: 12px; }
+.card h3 { margin: 6px 0; font-size: 14px; }
+.card-id { color: #64748b; font-weight: 400; font-size: 11px; }
+.card-desc { color: #94a3b8; margin: 4px 0 8px; }
+.badge { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+.badge-cics { color: #38bdf8; background: #38bdf822; }
+.badge-mq { color: #d946ef; background: #d946ef22; }
+.badge-batch { color: #4ade80; background: #4ade8022; }
+.badge-hub { color: #94a3b8; background: #94a3b822; }
+.card-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font-size: 10px; padding: 1px 6px; border-radius: 3px; border: 1px solid #334155; }
