@@ -24,6 +24,7 @@ export default function App() {
           <button
             key={v.key}
             className={active === v.key ? 'tab active' : 'tab'}
+            aria-selected={active === v.key}
             onClick={() => setActive(v.key)}
           >
             {v.label}
