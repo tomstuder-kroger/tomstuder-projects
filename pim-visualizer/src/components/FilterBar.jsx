@@ -1,11 +1,10 @@
-import { useFilters } from '../context/FilterContext';
+import { useFilters, ALL_CATEGORIES } from '../context/FilterContext';
 import { CAT_PLURAL, nodes } from '../data/pidData';
 
-const CATEGORY_ORDER = ['cics', 'mq', 'batch', 'hub'];
+const hubs = nodes.filter(n => n.cat === 'hub');
 
 export default function FilterBar() {
   const { search, setSearch, categories, setCategories, hubFilter, setHubFilter, namedOnly, setNamedOnly } = useFilters();
-  const hubs = nodes.filter(n => n.cat === 'hub');
 
   function toggleCategory(cat) {
     const next = new Set(categories);
@@ -18,10 +17,11 @@ export default function FilterBar() {
       <input
         type="text"
         placeholder="Search name/ID"
+        aria-label="Search name/ID"
         value={search}
         onChange={e => setSearch(e.target.value)}
       />
-      {CATEGORY_ORDER.map(cat => (
+      {ALL_CATEGORIES.map(cat => (
         <label key={cat}>
           <input
             type="checkbox"
@@ -31,7 +31,11 @@ export default function FilterBar() {
           {CAT_PLURAL[cat]}
         </label>
       ))}
-      <select value={hubFilter ?? ''} onChange={e => setHubFilter(e.target.value || null)}>
+      <select
+        aria-label="Filter by hub"
+        value={hubFilter ?? ''}
+        onChange={e => setHubFilter(e.target.value || null)}
+      >
         <option value="">All hubs</option>
         {hubs.map(h => (
           <option key={h.id} value={h.id}>{h.label}</option>

@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import { nodes, adjacency } from '../data/pidData';
 
-const ALL_CATEGORIES = ['cics', 'mq', 'batch', 'hub'];
+export const ALL_CATEGORIES = ['cics', 'mq', 'batch', 'hub'];
 
 const FilterContext = createContext(null);
 

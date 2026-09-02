@@ -5,8 +5,12 @@ import { FilterProvider, useFilters } from '../context/FilterContext';
 import FilterBar from './FilterBar';
 
 function Probe() {
-  const { search, namedOnly } = useFilters();
-  return <div data-testid="probe">{search}|{String(namedOnly)}</div>;
+  const { search, namedOnly, categories, hubFilter } = useFilters();
+  return (
+    <div data-testid="probe">
+      {search}|{String(namedOnly)}|{[...categories].sort().join(',')}|{String(hubFilter)}
+    </div>
+  );
 }
 
 function setup() {
@@ -36,5 +40,17 @@ describe('FilterBar', () => {
     setup();
     await userEvent.click(screen.getByLabelText(/named only/i));
     expect(screen.getByTestId('probe')).toHaveTextContent('|false');
+  });
+
+  it('unchecking a category checkbox updates FilterContext categories', async () => {
+    setup();
+    await userEvent.click(screen.getByLabelText(/item setup/i));
+    expect(screen.getByTestId('probe')).toHaveTextContent('batch,hub,mq');
+  });
+
+  it('selecting a hub updates FilterContext hubFilter', async () => {
+    setup();
+    await userEvent.selectOptions(screen.getByLabelText(/filter by hub/i), 'TRNROT');
+    expect(screen.getByTestId('probe')).toHaveTextContent('TRNROT');
   });
 });
