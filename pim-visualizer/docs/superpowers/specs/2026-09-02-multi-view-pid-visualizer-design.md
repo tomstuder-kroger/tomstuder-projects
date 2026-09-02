@@ -4,6 +4,8 @@
 
 `references/PID_Network_Graph_v3.html` is a standalone D3 force-directed graph prototype visualizing Kroger's PID (Product Item Database) system landscape: ~40 curated/named processes and shared systems, plus ~490 procedurally-generated filler nodes, wired together with a hardcoded edge list. It supports zoom/pan, hover tooltips, click-to-focus (dim everything except a node's direct neighbors), and category highlight buttons.
 
+**Node count note:** the dataset totals **535 nodes** (8 hub/shared-system nodes + 527 process nodes across the `cics`/`mq`/`batch` categories). The reference file's own header text ("527 Moving Parts") refers to the 527 process nodes only, excluding the 8 hubs — both numbers are correct and refer to different subsets; this spec uses "535" for total node count and "527" specifically when referring to process nodes excluding hubs.
+
 This spec covers rebuilding it as a React app with the same underlying data, but adding four additional ways to view/filter it: Tree/Hierarchy, List, Product Cards, and List-with-dependency-sub-listings — alongside the original Network Graph, all sharing one filter bar.
 
 ## Goals
@@ -76,7 +78,7 @@ Ported as-is from the reference file: force simulation, zoom/pan, hover tooltips
 
 Category-rooted expandable tree as the default landing structure: top level = 4 categories (Item Setup Screens, Live Feeds, Overnight Jobs, Shared Systems), expanding a category lists its nodes (respecting current filters).
 
-Clicking any node re-roots the tree at that node: the view switches to rendering that node as the root, with its direct neighbors (from `adjacency`) as children, expandable outward level by level. A "back to categories" control returns to the default rooted view. This combines the category-rooted structure with a pick-a-root explorer, per brainstorming discussion — chosen over a pure hub-rooted tree (rejected: heavily skewed, 249 of 527 nodes sit under one hub) and a pure blank-root explorer (rejected: no populated default landing state).
+Clicking any node re-roots the tree at that node: the view switches to rendering that node as the root, with its direct neighbors (from `adjacency`) as children, expandable outward level by level. A "back to categories" control returns to the default rooted view. This combines the category-rooted structure with a pick-a-root explorer, per brainstorming discussion — chosen over a pure hub-rooted tree (rejected: heavily skewed, 249 of the 527 non-hub process nodes connect to just one hub, the Compliance Log) and a pure blank-root explorer (rejected: no populated default landing state).
 
 **Cycle handling:** the underlying graph has cycles (chained `PIDT` nodes, nodes with multiple hub connections), so outward expansion must track a visited-set of node ids per branch and skip re-adding any id already present on the path from the root to the current node, rather than letting it reappear as its own descendant. A node reachable via multiple paths may still appear in multiple branches (that's expected/informative) — the visited-set only prevents a node from being its own ancestor.
 
