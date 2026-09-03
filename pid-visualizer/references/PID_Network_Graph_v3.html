@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PID System — Program Dependency Network v3</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #020817; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; }
+
+    #header { position: absolute; top: 0; left: 0; right: 0; padding: 14px 20px 10px; z-index: 20; pointer-events: none; }
+    h1 { font-size: 17px; color: #f1f5f9; font-weight: 700; }
+    h1 em { color: #f43f5e; font-style: normal; }
+    .sub { font-size: 11px; color: #334155; margin-top: 3px; }
+
+    #stats { position: absolute; top: 68px; left: 16px; background: rgba(2,8,23,0.9); border: 1px solid #0f172a; border-radius: 8px; padding: 12px 14px; z-index: 10; min-width: 200px; backdrop-filter: blur(4px); }
+    .srow { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 11px; }
+    .srow:last-child { margin-bottom: 0; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .sval { color: #334155; margin-left: auto; font-size: 10.5px; }
+    .sdiv { border-top: 1px solid #0f172a; margin: 7px 0; }
+
+    #filters { position: absolute; top: 68px; right: 16px; background: rgba(2,8,23,0.9); border: 1px solid #0f172a; border-radius: 8px; padding: 10px; z-index: 10; backdrop-filter: blur(4px); }
+    .flabel { font-size: 9.5px; color: #334155; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 7px; }
+    .fbtn { display: block; width: 100%; text-align: left; padding: 5px 9px; border-radius: 4px; border: 1px solid transparent; background: transparent; color: #475569; font-size: 11px; cursor: pointer; margin-bottom: 3px; font-family: inherit; transition: all 0.12s; }
+    .fbtn:hover, .fbtn.on { background: #0f172a; color: #e2e8f0; border-color: #1e293b; }
+
+    /* ── Focus panel ── */
+    #focus-panel {
+      display: none;
+      position: absolute;
+      bottom: 16px; left: 50%; transform: translateX(-50%);
+      background: rgba(2,8,23,0.97);
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 14px 18px 12px;
+      z-index: 30;
+      max-width: 780px;
+      width: calc(100vw - 340px);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 40px rgba(0,0,0,0.7);
+    }
+    #fp-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+    #fp-title { font-size: 13px; font-weight: 700; line-height: 1.4; }
+    #fp-close { background: none; border: none; color: #334155; font-size: 16px; cursor: pointer; padding: 0 0 0 12px; line-height: 1; flex-shrink: 0; }
+    #fp-close:hover { color: #94a3b8; }
+    #fp-body { display: flex; flex-wrap: wrap; gap: 10px; }
+    .fp-group { min-width: 140px; }
+    .fp-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 5px; }
+    .fp-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .fp-tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; border: 1px solid; background: rgba(255,255,255,0.04); white-space: nowrap; }
+    .fp-more { font-size: 10px; color: #334155; display: block; margin-top: 4px; }
+
+    #tip { display: none; position: fixed; background: rgba(2,8,23,0.96); color: #e2e8f0; font-size: 11.5px; padding: 9px 13px; border-radius: 6px; pointer-events: none; line-height: 1.6; max-width: 260px; border: 1px solid #1e293b; z-index: 9999; }
+    #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #1e293b; font-size: 13px; z-index: 5; }
+    #chart { position: absolute; inset: 0; cursor: default; }
+    .node { cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div id="header">
+  <h1><em>527 Moving Parts.</em> One Wrong Entry Reaches Every Store.</h1>
+  <div class="sub">Each dot = one automated process &nbsp;·&nbsp; Lines = shared data or direct trigger &nbsp;·&nbsp; <strong style="color:#475569">Click any dot</strong> to explore its connections &nbsp;·&nbsp; Scroll to zoom &nbsp;·&nbsp; Drag to pan</div>
+</div>
+
+<div id="stats">
+  <div class="srow"><div class="dot" style="background:#38bdf8;box-shadow:0 0 5px #38bdf8"></div><span style="color:#38bdf8">Item Setup Screens</span><span class="sval">124</span></div>
+  <div class="srow"><div class="dot" style="background:#d946ef;box-shadow:0 0 5px #d946ef"></div><span style="color:#d946ef">Live System Feeds</span><span class="sval">27</span></div>
+  <div class="srow"><div class="dot" style="background:#4ade80;box-shadow:0 0 5px #4ade80"></div><span style="color:#4ade80">Overnight Automated Jobs</span><span class="sval">376</span></div>
+  <div class="sdiv"></div>
+  <div class="srow"><div class="dot" style="background:#f43f5e;box-shadow:0 0 5px #f43f5e"></div><span style="color:#f43f5e">Write to Compliance Log</span><span class="sval">249</span></div>
+  <div class="srow"><div class="dot" style="background:#94a3b8"></div><span>Shared Systems</span><span class="sval">8</span></div>
+  <div class="sdiv"></div>
+  <div class="srow" style="color:#1e293b; font-size:10px">Total: 535 nodes</div>
+</div>
+
+<div id="filters">
+  <div class="flabel">Highlight by type</div>
+  <button class="fbtn" onclick="hl('cics',this)" style="color:#38bdf8">● Item Setup Screens</button>
+  <button class="fbtn" onclick="hl('mq',this)"   style="color:#d946ef">● Live System Feeds</button>
+  <button class="fbtn" onclick="hl('batch',this)" style="color:#4ade80">● Overnight Jobs</button>
+  <button class="fbtn" onclick="hl('hub',this)"   style="color:#94a3b8">● Shared Systems</button>
+  <button class="fbtn" onclick="hl(null,this)">Clear</button>
+</div>
+
+<!-- Click-to-explore panel -->
+<div id="focus-panel">
+  <div id="fp-header">
+    <div id="fp-title"></div>
+    <button id="fp-close" onclick="resetFocus()">×</button>
+  </div>
+  <div id="fp-body"></div>
+</div>
+
+<div id="loading">Building simulation…</div>
+<svg id="chart"></svg>
+<div id="tip"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+(function(){
+
+const CAT_COLOR   = { cics:'#38bdf8', mq:'#d946ef', batch:'#4ade80' };
+const CAT_LABEL   = { cics:'Item Setup Screen', mq:'Live System Feed', batch:'Overnight Automated Job', hub:'Shared System' };
+const CAT_PLURAL  = { hub:'Shared Systems', cics:'Item Setup Screens', mq:'Live System Feeds', batch:'Overnight Jobs' };
+
+// ── Nodes ─────────────────────────────────────────────────────────────────────
+
+const HUBS = [
+  { id:'TRNROT',  cat:'hub', label:'Compliance Log',
+    sub:'249 of 527 processes write permanently to this record · cannot be modified or deleted · 7-year legal retention',
+    color:'#f43f5e', r:22 },
+  { id:'IMS_DB',  cat:'hub', label:'Item Database',
+    sub:'Core item master — stores case, consumer, division, and catalog records for every product',
+    color:'#fb923c', r:18 },
+  { id:'DB2',     cat:'hub', label:'Product Records',
+    sub:'50+ product data tables — pricing attributes, warehouse slot assignments, store authorization lists',
+    color:'#fbbf24', r:18 },
+  { id:'MQ_SYS',  cat:'hub', label:'Live Feeds Hub',
+    sub:'Real-time messaging — buying system signals, warehouse updates, and pricing changes flow through here instantly',
+    color:'#8b5cf6', r:16 },
+  { id:'POS_KMA', cat:'hub', label:'Store Registers (31 Markets)',
+    sub:'All 31 Kroger Market Areas — every daily item change is pushed to every store register within 24 hours',
+    color:'#94a3b8', r:16 },
+  { id:'NDM_FT',  cat:'hub', label:'Nightly Data Transfers',
+    sub:'400+ distinct file feeds processed every night — supplier files, vendor data, warehouse exports, and partner extracts',
+    color:'#94a3b8', r:14 },
+  { id:'SYSOUT',  cat:'hub', label:'Automated Reports',
+    sub:'353+ automated reports generated daily — audit trails, control summaries, and operational outputs',
+    color:'#94a3b8', r:14 },
+  { id:'EXT_SYS', cat:'hub', label:'Partner Systems',
+    sub:'Connected business platforms — buying system (MAGIC), warehousing (WMS), pricing (OLP), replenishment (PRISM/PMS), Ralphs, CIM',
+    color:'#94a3b8', r:14 },
+];
+
+const KEY = [
+  { id:'PIDTC1', cat:'cics', label:'Case Setup',        sub:'Primary item entry screen — add, update, or remove case-level product data', r:8 },
+  { id:'PIDGCD', cat:'cics', label:'DSD Item Setup',    sub:'Direct Store Delivery item setup and maintenance', r:7 },
+  { id:'PIDTIC', cat:'cics', label:'Item Maintenance',  sub:'Central item record maintenance — cross-database edits', r:7 },
+  { id:'PIDTXX', cat:'cics', label:'Database Sync',     sub:'Fixes mismatches between the two parallel item databases — must be run manually', r:7 },
+  { id:'PIDBC0', cat:'cics', label:'Staging Review',    sub:'Browse and review items waiting in the staging queue before committing', r:6 },
+  { id:'PIDTSS', cat:'cics', label:'Stage Pre-fill',    sub:'Pre-populates the Case Setup screen from a staged request', r:6 },
+  { id:'PIDTCE', cat:'cics', label:'Case Setup (Alt)',  sub:'Alternate case information entry screen', r:6 },
+  { id:'PIDTCG', cat:'cics', label:'Consumer Group',    sub:'Consumer group setup and maintenance', r:6 },
+  { id:'PIDTCO', cat:'cics', label:'Consumer Maint.',   sub:'Consumer-level product data maintenance', r:6 },
+  { id:'PIDTEX', cat:'cics', label:'Store Auth',        sub:'Store-level authorization exception management', r:6 },
+  { id:'PIDTAU', cat:'cics', label:'Code Lookup',       sub:'Display and reference product management codes', r:6 },
+  { id:'PIDTDX', cat:'cics', label:'Distribution',      sub:'Purchasing and distribution data entry', r:6 },
+  { id:'PIDTEC', cat:'cics', label:'Extended Item',     sub:'Extended consumer item attribute maintenance', r:6 },
+  { id:'PIDCID', cat:'cics', label:'Ralphs Feed',       sub:'Sends item and pricing updates directly to Ralphs systems via live messaging', r:6 },
+  { id:'PIDCMQR',cat:'mq',   label:'Warehouse Receiver',sub:'Receives live warehouse updates — dimensions, weights, pallet config — from WMS/WIN systems', r:8 },
+  { id:'PIDCMQM',cat:'mq',   label:'Buying Receiver',  sub:'Receives item master changes from the MAGIC buying system in real time', r:8 },
+  { id:'PIDCMQO',cat:'mq',   label:'Pricing Router',   sub:'Routes incoming pricing signals — sends standard items to PID, CIM-managed items to a separate channel', r:7 },
+  { id:'PIDCMQP',cat:'mq',   label:'Pricing Processor',sub:'Processes incoming pricing data for standard (non-CIM) items', r:7 },
+  { id:'PIDCMQW',cat:'mq',   label:'WHS Connector',    sub:'Handles warehouse slot authorization sub-processing', r:6 },
+  { id:'PIDCMQC',cat:'mq',   label:'Item Connector',   sub:'Handles case and consumer item data sub-processing', r:6 },
+  { id:'PIDMQL', cat:'mq',   label:'Feed Loader',      sub:'Reads nightly files and publishes them as live messages to connected systems', r:6 },
+  { id:'PID5400',cat:'mq',   label:'OPS/Ralphs Sender',sub:'Sends item updates to OPS, Ralphs, and PEYTON via live messaging', r:6 },
+  { id:'PID5375',cat:'mq',   label:'Pricing Sender',   sub:'Sends pricing updates to OPS, Ralphs, and PEYTON via live messaging', r:6 },
+  { id:'PIDCMQS',cat:'mq',   label:'Confirm Sender',   sub:'Sends confirmation messages back to the originating system after processing', r:6 },
+  { id:'PID4102',cat:'batch',label:'POS Publisher',    sub:'Publishes all daily item changes to all 31 markets — the primary store feed · processes 51+ files', r:10 },
+  { id:'PID6011',cat:'batch',label:'Vendor Loader',    sub:'Loads vendor item files — Hallmark, American Greetings, magazines, books · 20+ files nightly', r:8 },
+  { id:'PID6770',cat:'batch',label:'Barcode Setup',    sub:'Sets up GTIN/barcode mappings from ITrade, plant data, meat, and Roundy\'s files', r:7 },
+  { id:'PID3500',cat:'batch',label:'PDM Processor',   sub:'Processes daily product data management transactions · outputs to pricing and replenishment systems', r:7 },
+  { id:'PID6810',cat:'batch',label:'Report Runner',   sub:'Generates 16+ nightly operational and compliance reports', r:7 },
+  { id:'PID5800',cat:'batch',label:'Data Extract',    sub:'Extracts product data on demand for external systems · 50–500 MB per run', r:6 },
+  { id:'PID5999',cat:'batch',label:'Data Loader',     sub:'Loads data into product tables — can append or fully replace a table (HIGH RISK: no undo)', r:6 },
+  { id:'PID6750',cat:'batch',label:'Division Sync',   sub:'Synchronizes division-level product data — private label, discontinued items', r:6 },
+  { id:'PIDSYNC',cat:'batch',label:'System Sync',     sub:'Full or incremental synchronization across PID, the buying system, and all store registers', r:6 },
+  { id:'PID0246',cat:'batch',label:'Cost Processor',  sub:'Explodes warehouse-level cost records into divisional cost data', r:6 },
+];
+
+const nodes = [...HUBS, ...KEY];
+for(let i=1;i<=40;i++)  nodes.push({id:`PIDB${String(i).padStart(3,'0')}`, cat:'cics',  r:3.5});
+for(let i=1;i<=56;i++)  nodes.push({id:`PIDT${String(i).padStart(3,'0')}`, cat:'cics',  r:3.5});
+for(let i=1;i<=14;i++)  nodes.push({id:`PICX${String(i).padStart(3,'0')}`, cat:'cics',  r:3.5});
+for(let i=1;i<=17;i++)  nodes.push({id:`PIDQ${String(i).padStart(3,'0')}`, cat:'mq',    r:3.5});
+for(let i=1;i<=366;i++) nodes.push({id:`PBAT${String(i).padStart(4,'0')}`, cat:'batch', r:3});
+
+const idx={};
+nodes.forEach((n,i)=>idx[n.id]=i);
+
+// ── Edges ─────────────────────────────────────────────────────────────────────
+
+const links=[];
+function e(a,b){ if(a in idx && b in idx) links.push({source:a,target:b}); }
+
+e('IMS_DB','DB2'); e('IMS_DB','TRNROT'); e('MQ_SYS','EXT_SYS'); e('POS_KMA','NDM_FT'); e('NDM_FT','EXT_SYS');
+['PIDTC1','PIDGCD','PIDTIC','PIDTXX','PIDTCE','PIDTCG','PIDTCO','PIDTEX','PIDTDX','PIDTEC'].forEach(id=>{e(id,'TRNROT');e(id,'IMS_DB');e(id,'DB2');});
+['PIDBC0','PIDTSS','PIDTAU'].forEach(id=>e(id,'DB2'));
+e('PIDCID','MQ_SYS'); e('PIDCID','EXT_SYS');
+e('PIDTSS','PIDTC1'); e('PIDBC0','PIDTC1'); e('PIDTXX','PIDTIC'); e('PIDTCE','PIDTC1');
+e('PIDCMQR','MQ_SYS'); e('PIDCMQR','IMS_DB'); e('PIDCMQR','DB2'); e('PIDCMQR','TRNROT'); e('PIDCMQR','EXT_SYS');
+e('PIDCMQM','MQ_SYS'); e('PIDCMQM','DB2');    e('PIDCMQM','TRNROT'); e('PIDCMQM','EXT_SYS');
+e('PIDCMQO','MQ_SYS'); e('PIDCMQO','EXT_SYS');
+e('PIDCMQP','IMS_DB'); e('PIDCMQP','DB2'); e('PIDCMQP','TRNROT');
+e('PIDCMQW','IMS_DB'); e('PIDCMQW','DB2');
+e('PIDCMQC','IMS_DB'); e('PIDCMQC','DB2');
+e('PIDMQL','MQ_SYS'); e('PIDMQL','NDM_FT');
+e('PID5400','MQ_SYS'); e('PID5400','EXT_SYS');
+e('PID5375','MQ_SYS'); e('PID5375','EXT_SYS');
+e('PIDCMQS','MQ_SYS'); e('PIDCMQS','EXT_SYS');
+e('PIDCMQM','PIDCMQW'); e('PIDCMQM','PIDCMQC'); e('PIDCMQO','PIDCMQP');
+e('PID4102','POS_KMA'); e('PID4102','NDM_FT'); e('PID4102','SYSOUT'); e('PID4102','DB2'); e('PID4102','TRNROT');
+e('PID6011','NDM_FT'); e('PID6011','DB2'); e('PID6011','IMS_DB'); e('PID6011','TRNROT'); e('PID6011','SYSOUT');
+e('PID6770','NDM_FT'); e('PID6770','DB2'); e('PID6770','SYSOUT');
+e('PID3500','NDM_FT'); e('PID3500','DB2'); e('PID3500','TRNROT'); e('PID3500','EXT_SYS');
+e('PID6810','NDM_FT'); e('PID6810','SYSOUT'); e('PID6810','DB2');
+e('PID5800','NDM_FT'); e('PID5800','DB2');
+e('PID5999','NDM_FT'); e('PID5999','DB2');
+e('PID6750','NDM_FT'); e('PID6750','SYSOUT');
+e('PIDSYNC','DB2');    e('PIDSYNC','NDM_FT'); e('PIDSYNC','EXT_SYS');
+e('PID0246','NDM_FT'); e('PID0246','SYSOUT'); e('PID0246','DB2');
+e('PID4102','PID6011'); e('PID3500','PID6011'); e('PID4102','PID6750');
+
+const cA=['PIDTC1','PIDGCD','PIDTIC','PIDTCE','PIDTCG','PIDTCO','PIDTEX','PIDTDX','PIDTEC','PIDTSS'];
+for(let i=1;i<=40;i++){const id=`PIDB${String(i).padStart(3,'0')}`;e(id,'DB2');if(i%3===0)e(id,'IMS_DB');e(id,cA[(i-1)%cA.length]);if(i%7===0)e(id,cA[(i+3)%cA.length]);}
+for(let i=1;i<=56;i++){const id=`PIDT${String(i).padStart(3,'0')}`;e(id,'TRNROT');e(id,'DB2');e(id,'IMS_DB');if(i>1)e(id,`PIDT${String(i-1).padStart(3,'0')}`);if(i%8===0)e(id,cA[i%cA.length]);}
+for(let i=1;i<=14;i++){const id=`PICX${String(i).padStart(3,'0')}`;e(id,'DB2');if(i%2===0)e(id,'TRNROT');if(i%3===0)e(id,'IMS_DB');e(id,cA[i%cA.length]);}
+const mqA=['PIDCMQR','PIDCMQM','PIDCMQO','PIDMQL','PID5400'];
+for(let i=1;i<=17;i++){const id=`PIDQ${String(i).padStart(3,'0')}`;e(id,'MQ_SYS');if(i%2===0)e(id,'DB2');if(i%3===0)e(id,'TRNROT');if(i%4===0)e(id,'EXT_SYS');e(id,mqA[(i-1)%mqA.length]);}
+const bA=['PID4102','PID6011','PID6770','PID3500','PID6810','PID5800','PID6750','PIDSYNC','PID0246'];
+for(let i=1;i<=366;i++){
+  const id=`PBAT${String(i).padStart(4,'0')}`;
+  const seg=i<=122?0:i<=244?1:2;
+  if(seg===0){e(id,'NDM_FT');if(i%2===0)e(id,'TRNROT');if(i%3===0)e(id,'POS_KMA');if(i%4===0)e(id,'DB2');e(id,bA[(i-1)%4]);}
+  else if(seg===1){e(id,'SYSOUT');if(i%2===0)e(id,'NDM_FT');if(i%3===0)e(id,'EXT_SYS');if(i%4===0)e(id,'DB2');if(i%5===0)e(id,'TRNROT');e(id,bA[4+((i-1)%3)]);}
+  else{e(id,'DB2');if(i%2===0)e(id,'NDM_FT');if(i%2===1)e(id,'SYSOUT');if(i%3===0)e(id,'TRNROT');if(i%4===0)e(id,'IMS_DB');if(i%5===0)e(id,'POS_KMA');if(i%6===0)e(id,'EXT_SYS');e(id,bA[(i-1)%bA.length]);}
+  if(i>1&&i%6===0)e(id,`PBAT${String(i-1).padStart(4,'0')}`);
+  if(i>5&&i%18===0)e(id,`PBAT${String(i-5).padStart(4,'0')}`);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+
+const W=window.innerWidth, H=window.innerHeight;
+function nc(d){ return d.cat==='hub' ? d.color : CAT_COLOR[d.cat]; }
+function lc(d){
+  const s=d.source, t=d.target;
+  if(s.cat!=='hub') return CAT_COLOR[s.cat];
+  if(t.cat!=='hub') return CAT_COLOR[t.cat];
+  return '#475569';
+}
+
+const svg=d3.select('#chart').attr('width',W).attr('height',H);
+const g=svg.append('g');
+const zoom=d3.zoom().scaleExtent([0.08,5]).on('zoom',({transform})=>g.attr('transform',transform));
+svg.call(zoom);
+
+// Click on empty canvas → deselect
+svg.on('click', () => { if(selected) resetFocus(); });
+
+const defs=svg.append('defs');
+defs.append('filter').attr('id','g1').attr('x','-40%').attr('y','-40%').attr('width','180%').attr('height','180%')
+  .html(`<feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/>
+         <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>`);
+defs.append('filter').attr('id','g2').attr('x','-30%').attr('y','-30%').attr('width','160%').attr('height','160%')
+  .html(`<feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b"/>
+         <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>`);
+
+const haloLinks=g.append('g').selectAll('line').data(links).join('line')
+  .attr('stroke-width',3.5).attr('stroke-opacity',0.06);
+const coreLinks=g.append('g').selectAll('line').data(links).join('line')
+  .attr('stroke-width',0.9).attr('stroke-opacity',0.28);
+
+// Track drag movement to distinguish click from drag
+let dragMoved = false;
+
+const nodeG=g.append('g').selectAll('g').data(nodes).join('g').attr('class','node')
+  .call(d3.drag()
+    .on('start',(ev,d)=>{ dragMoved=false; if(!ev.active)sim.alphaTarget(0.3).restart(); d.fx=d.x;d.fy=d.y; })
+    .on('drag', (ev,d)=>{ dragMoved=true; d.fx=ev.x;d.fy=ev.y; })
+    .on('end',  (ev,d)=>{ if(!ev.active)sim.alphaTarget(0); d.fx=null;d.fy=null; }));
+
+nodeG.filter(d=>d.cat==='hub')
+  .append('circle')
+  .attr('r',d=>d.r+6).attr('fill','none')
+  .attr('stroke',d=>nc(d)).attr('stroke-width',1).attr('stroke-opacity',0.2)
+  .attr('filter','url(#g1)');
+
+nodeG.append('circle')
+  .attr('r',d=>d.r||3)
+  .attr('fill',d=>nc(d))
+  .attr('fill-opacity',d=>d.cat==='hub'?0.9:0.72)
+  .attr('stroke',d=>nc(d)).attr('stroke-width',0.5).attr('stroke-opacity',0.6)
+  .attr('filter',d=>d.cat==='hub'?'url(#g1)':d.r>5?'url(#g2)':'none');
+
+nodeG.filter(d=>d.label)
+  .append('text')
+  .attr('dy',d=>d.cat==='hub'?d.r+12:-(d.r+4))
+  .attr('text-anchor','middle')
+  .attr('font-size',d=>d.cat==='hub'?'11px':'8px')
+  .attr('font-weight','700')
+  .attr('fill',d=>nc(d))
+  .attr('fill-opacity',d=>d.cat==='hub'?0.95:0.82)
+  .attr('filter',d=>d.cat==='hub'?'url(#g2)':'none')
+  .style('pointer-events','none')
+  .text(d=>d.label);
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+
+const tip=document.getElementById('tip');
+nodeG
+  .on('mouseover',function(ev,d){
+    if(selected && selected!==d.id) return; // don't interfere with focus mode
+    d3.select(this).select('circle')
+      .attr('fill-opacity',1).attr('r',d=>(d.r||3)*1.45).attr('filter','url(#g1)');
+    const col=nc(d), cat=CAT_LABEL[d.cat]||d.cat;
+    tip.innerHTML=`<strong style="color:${col}">${d.label||d.id}</strong><br><span style="color:#475569;font-size:10px">${cat}</span>${d.sub?`<br><span style="color:#64748b;font-size:10.5px">${d.sub}</span>`:''}`;
+    tip.style.display='block';
+    tip.style.left=(ev.clientX+14)+'px';
+    tip.style.top=(ev.clientY-40)+'px';
+  })
+  .on('mousemove',ev=>{ tip.style.left=(ev.clientX+14)+'px'; tip.style.top=(ev.clientY-40)+'px'; })
+  .on('mouseout',function(ev,d){
+    tip.style.display='none';
+    if(selected) return; // focus mode manages circle state
+    d3.select(this).select('circle')
+      .attr('fill-opacity',d=>d.cat==='hub'?0.9:0.72)
+      .attr('r',d=>d.r||3)
+      .attr('filter',d=>d.cat==='hub'?'url(#g1)':d.r>5?'url(#g2)':'none');
+  })
+  .on('click',function(ev,d){
+    ev.stopPropagation();
+    if(dragMoved) return;
+    focusNode(d);
+  });
+
+// ── Force simulation ──────────────────────────────────────────────────────────
+
+const sim=d3.forceSimulation(nodes)
+  .force('link',d3.forceLink(links).id(d=>d.id).distance(d=>{
+    const sh=d.source.cat==='hub', th=d.target.cat==='hub';
+    return (sh&&th)?135:(sh||th)?68:28;
+  }).strength(0.35))
+  .force('charge',d3.forceManyBody().strength(d=>d.cat==='hub'?-700:d.r>5?-90:-42))
+  .force('center',d3.forceCenter(W/2,H/2).strength(0.06))
+  .force('collide',d3.forceCollide().radius(d=>(d.r||3)+2.5).strength(0.7))
+  .on('tick',tick)
+  .on('end',()=>{
+    document.getElementById('loading').style.display='none';
+    svg.call(zoom.transform,d3.zoomIdentity.translate(W*0.04,H*0.04).scale(0.9));
+    buildAdj(); // links are now resolved to node objects
+  });
+
+function tick(){
+  const apply=sel=>sel
+    .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+    .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y)
+    .attr('stroke',d=>lc(d));
+  apply(haloLinks); apply(coreLinks);
+  nodeG.attr('transform',d=>`translate(${d.x},${d.y})`);
+}
+
+// ── Adjacency map (built after sim resolves IDs → node objects) ───────────────
+
+const adjSet = new Map();
+function buildAdj(){
+  nodes.forEach(n=>adjSet.set(n.id, new Set()));
+  links.forEach(l=>{
+    adjSet.get(l.source.id).add(l.target.id);
+    adjSet.get(l.target.id).add(l.source.id);
+  });
+}
+
+// ── Click-to-explore ──────────────────────────────────────────────────────────
+
+let selected = null;
+
+function focusNode(d){
+  // Toggle off if same node clicked twice
+  if(selected===d.id){ resetFocus(); return; }
+  selected = d.id;
+  tip.style.display='none';
+
+  const neighbors = adjSet.get(d.id) || new Set();
+  const inScope = new Set(neighbors); inScope.add(d.id);
+
+  // Dim/brighten nodes
+  nodeG.select('circle')
+    .attr('fill-opacity', n => inScope.has(n.id) ? (n.id===d.id?1 : n.cat==='hub'?0.88:0.8) : 0.04)
+    .attr('filter', n => inScope.has(n.id) ? (n.cat==='hub'||n.id===d.id?'url(#g1)':n.r>5?'url(#g2)':'none') : 'none')
+    .attr('r', n => inScope.has(n.id) ? (n.id===d.id?(d.r||3)*1.35:(n.r||3)) : (n.r||3));
+
+  // Highlight only edges touching the selected node
+  haloLinks.attr('stroke-opacity', l=>(l.source.id===d.id||l.target.id===d.id)?0.22:0.008);
+  coreLinks
+    .attr('stroke-opacity', l=>(l.source.id===d.id||l.target.id===d.id)?0.9:0.008)
+    .attr('stroke-width',   l=>(l.source.id===d.id||l.target.id===d.id)?1.6:0.9);
+
+  // Clear category filter buttons
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+
+  // Build panel content
+  const connectedNodes = nodes.filter(n=>neighbors.has(n.id));
+  const bycat = {hub:[], cics:[], mq:[], batch:[]};
+  connectedNodes.forEach(n=>(bycat[n.cat]||[]).push(n));
+
+  let html='';
+  for(const cat of ['hub','cics','mq','batch']){
+    const grp=bycat[cat];
+    if(!grp.length) continue;
+    const named=grp.filter(n=>n.label);
+    const unnamed=grp.length-named.length;
+    const col=cat==='hub'?'#94a3b8':CAT_COLOR[cat];
+    html+=`<div class="fp-group">
+      <span class="fp-cat" style="color:${col}">${CAT_PLURAL[cat]} (${grp.length})</span>
+      <div class="fp-tags">
+        ${named.map(n=>`<span class="fp-tag" style="border-color:${col}55;color:${col}cc">${n.label}</span>`).join('')}
+        ${unnamed>0?`<span class="fp-more">+${unnamed} more</span>`:''}
+      </div>
+    </div>`;
+  }
+
+  const color=nc(d);
+  document.getElementById('fp-title').innerHTML=
+    `<span style="color:${color};font-size:14px">${d.label||d.id}</span>&nbsp;
+     <span style="color:#334155;font-weight:400">· ${CAT_LABEL[d.cat]} · </span>
+     <span style="color:#475569;font-weight:400">${neighbors.size} direct connection${neighbors.size!==1?'s':''}</span>`;
+  document.getElementById('fp-body').innerHTML=html || '<span style="color:#1e293b;font-size:11px">No connections mapped</span>';
+  document.getElementById('focus-panel').style.display='block';
+}
+
+window.resetFocus=function(){
+  selected=null;
+  document.getElementById('focus-panel').style.display='none';
+  nodeG.select('circle')
+    .attr('fill-opacity', d=>d.cat==='hub'?0.9:0.72)
+    .attr('filter', d=>d.cat==='hub'?'url(#g1)':d.r>5?'url(#g2)':'none')
+    .attr('r', d=>d.r||3);
+  haloLinks.attr('stroke-opacity',0.06);
+  coreLinks.attr('stroke-opacity',0.28).attr('stroke-width',0.9);
+};
+
+// ── Category highlight ────────────────────────────────────────────────────────
+
+window.hl=function(cat,btn){
+  resetFocus();
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  if(!cat){ return; }
+  btn.classList.add('on');
+  nodeG.select('circle')
+    .attr('fill-opacity',d=>d.cat===cat?0.95:0.05)
+    .attr('filter',d=>d.cat===cat?'url(#g1)':'none');
+  haloLinks.attr('stroke-opacity',d=>(d.source.cat===cat||d.target.cat===cat)?0.18:0.01);
+  coreLinks.attr('stroke-opacity',d=>(d.source.cat===cat||d.target.cat===cat)?0.7:0.02);
+};
+
+})();
+</script>
+</body>
+</html>
