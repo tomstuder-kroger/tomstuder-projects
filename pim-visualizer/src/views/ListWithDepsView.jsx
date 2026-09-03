@@ -31,7 +31,11 @@ export default function ListWithDepsView() {
           <li
             key={n.id}
             className={n.id === selectedId ? 'selected' : ''}
+            role="button"
+            tabIndex={0}
+            aria-pressed={n.id === selectedId}
             onClick={() => setSelectedId(n.id)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedId(n.id); } }}
           >
             {n.label || n.id} <span className="deps-id">{n.id}</span>
           </li>
