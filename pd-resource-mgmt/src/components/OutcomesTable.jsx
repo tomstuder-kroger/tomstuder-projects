@@ -11,7 +11,7 @@ function OutcomesTable({
 }) {
   const getPortfolioName = (portfolioId) => {
     const portfolio = portfolios.find(p => p.id === portfolioId);
-    return portfolio ? portfolio.portfolioName : '';
+    return portfolio ? portfolio.name : '';
   };
 
   const getPortfolioColor = (portfolioName) => {
@@ -65,7 +65,7 @@ function OutcomesTable({
 
             return (
               <tr key={team.id}>
-                <td className="team-name">{team.teamName}</td>
+                <td className="team-name">{team.name}</td>
                 <td>
                   <span
                     className="portfolio-badge"

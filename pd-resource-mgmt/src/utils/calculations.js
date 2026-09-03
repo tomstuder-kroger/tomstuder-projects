@@ -68,6 +68,7 @@ export function calculateMonthlyRunRate(designer, capacitySettings) {
  */
 export function getUtilizationColor(utilization) {
   if (utilization < 70) return '#9ca3af';
+  if (utilization <= 85) return '#81C5F4';
   if (utilization <= 100) return '#2e7d32';
   return '#d32f2f';
 }

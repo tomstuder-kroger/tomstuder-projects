@@ -148,7 +148,8 @@ body {
   font-size: 1rem;
   font-weight: 600;
   color: #6b7280;
-  margin-bottom: 1rem;
+  margin-top: 24px;
+  margin-bottom: 24px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
