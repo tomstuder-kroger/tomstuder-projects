@@ -12,6 +12,7 @@ function TreeNode({ nodeId, visibleNodeIds, path, onSelect, initiallyExpanded = 
   const node = nodesById.get(nodeId);
   const children = [...(adjacency.get(nodeId) ?? [])]
     .filter(id => visibleNodeIds.has(id) && !path.has(id));
+  const canExpand = children.length > 0 && path.size < MAX_DEPTH;
 
   if (!node) return null;
 
@@ -19,14 +20,18 @@ function TreeNode({ nodeId, visibleNodeIds, path, onSelect, initiallyExpanded = 
     <li>
       <span
         className="tree-label"
+        role="button"
+        tabIndex={0}
+        aria-expanded={children.length > 0 ? expanded : undefined}
         onClick={() => setExpanded(e => !e)}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(x => !x); } }}
       >
-        {children.length > 0 ? (expanded ? '▾ ' : '▸ ') : '• '}
+        {canExpand ? (expanded ? '▾ ' : '▸ ') : '• '}
         <button className="tree-node-link" onClick={ev => { ev.stopPropagation(); onSelect(nodeId); }}>
           {node.label || node.id}
         </button>
       </span>
-      {expanded && children.length > 0 && path.size < MAX_DEPTH && (
+      {expanded && canExpand && (
         <ul>
           {children.map(childId => (
             <TreeNode
@@ -97,7 +102,14 @@ function CategoryBranch({ cat, ids, visibleNodeIds, onSelect }) {
   const [expanded, setExpanded] = useState(false);
   return (
     <li>
-      <span className="tree-label" onClick={() => setExpanded(e => !e)}>
+      <span
+        className="tree-label"
+        role="button"
+        tabIndex={0}
+        aria-expanded={ids.length > 0 ? expanded : undefined}
+        onClick={() => setExpanded(e => !e)}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(x => !x); } }}
+      >
         <span aria-hidden="true">{expanded ? '▾' : '▸'}</span>{' '}
         <span>{CAT_PLURAL[cat]}</span>{' '}
         <span className="tree-count">({ids.length})</span>
