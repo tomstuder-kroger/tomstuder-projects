@@ -1,0 +1,13 @@
+# Project folders now split into their own repos
+pd-resource-mgmt/
+
+# AI assistant configuration (contains project-specific prompts/memory)
+CLAUDE.md
+MEMORY.md
+GEMINI.md
+AGENTS.md
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
