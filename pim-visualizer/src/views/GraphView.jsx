@@ -96,6 +96,7 @@ export default function GraphView() {
     return () => {
       sim.stop();
       tip.remove();
+      nodes.forEach(n => { n.fx = null; n.fy = null; });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
