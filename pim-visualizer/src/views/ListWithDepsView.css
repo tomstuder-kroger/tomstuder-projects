@@ -1,0 +1,10 @@
+.deps-view { display: flex; gap: 16px; }
+.deps-list { list-style: none; margin: 0; padding: 0; width: 260px; font-size: 13px; max-height: 480px; overflow-y: auto; }
+.deps-list li { padding: 6px 8px; cursor: pointer; border-bottom: 1px solid #0f172a; }
+.deps-list li.selected { background: #0f172a; }
+.deps-id { color: #64748b; font-size: 11px; }
+.deps-detail { flex: 1; border: 1px solid #1e293b; border-radius: 8px; padding: 12px; font-size: 12px; }
+.deps-group { margin-bottom: 10px; }
+.deps-cat { color: #64748b; font-size: 10px; text-transform: uppercase; margin-bottom: 4px; }
+.deps-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.deps-tag { border: 1px solid #334155; border-radius: 3px; padding: 1px 6px; font-size: 11px; }
