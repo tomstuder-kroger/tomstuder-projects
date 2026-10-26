@@ -132,7 +132,7 @@ export function sumByDayOfWeek(entries) {
  */
 export function getMeetingVsFocusTimeSplit(entries) {
   const meetingTypes = ['1on1-meeting', 'standup', 'ktd-town-hall', 'manager-responsibilities'];
-  const focusTypes = ['focus-time', 'learning-development', 'side-of-desk-work'];
+  const focusTypes = ['focus-time', 'learning-dev', 'side-of-desk'];
   const adminTypes = ['admin-emails', 'admin-planning', 'admin-time-entry', 'it-support'];
 
   let meetings = 0;
@@ -197,13 +197,13 @@ export function getTaskTypeLabel(taskTypeId) {
     '1on1-meeting': '1:1 Meeting',
     'standup': 'Standup',
     'focus-time': 'Focus Time',
-    'learning-development': 'Learning & Development',
+    'learning-dev': 'Learning & Development',
     'admin-emails': 'Admin - Emails',
     'admin-planning': 'Admin - Planning',
     'admin-time-entry': 'Admin - Time Entry',
     'manager-responsibilities': 'Manager Responsibilities',
     'ktd-town-hall': 'KTD Town Hall',
-    'side-of-desk-work': 'Side of Desk Work',
+    'side-of-desk': 'Side of Desk Work',
     'it-support': 'IT Support'
   };
 
